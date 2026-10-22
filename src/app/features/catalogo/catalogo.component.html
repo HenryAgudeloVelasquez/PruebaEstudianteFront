@@ -1,0 +1,104 @@
+<div class="app-container">
+  <!-- Header -->
+  <div class="page-top-bar">
+    <div>
+      <h1 class="page-title">
+        <i class="pi pi-sitemap text-primary"></i>
+        <span>Mapa Curricular y Estructura Docente</span>
+      </h1>
+      <p class="page-subtitle">
+        Visualización de la estructura académica: 5 profesores titulares asignados a exactamente 2 materias cada uno (10 materias en total de 3 créditos cada una).
+      </p>
+    </div>
+
+    <button class="btn btn-outline" (click)="loadAcademicData()">
+      <i class="pi pi-sync"></i>
+      <span>Sincronizar Catálogo</span>
+    </button>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card glass-card">
+      <div class="metric-icon"><i class="pi pi-users"></i></div>
+      <div class="metric-info">
+        <span class="label">Profesores Titulares</span>
+        <span class="val">{{ profesores().length }} Docentes</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon icon-cyan"><i class="pi pi-book"></i></div>
+      <div class="metric-info">
+        <span class="label">Materias Disponibles</span>
+        <span class="val">{{ materias().length }} Materias</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon icon-emerald"><i class="pi pi-check-circle"></i></div>
+      <div class="metric-info">
+        <span class="label">Créditos por Materia</span>
+        <span class="val">3 Créditos Estándar</span>
+      </div>
+    </div>
+
+    <div class="metric-card glass-card">
+      <div class="metric-icon icon-purple"><i class="pi pi-shield"></i></div>
+      <div class="metric-info">
+        <span class="label">Distribución Docente</span>
+        <span class="val">2 Cátedras / Profesor</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Professors & Subjects Grid -->
+  @if (loading()) {
+    <div class="loading-box">
+      <i class="pi pi-spin pi-spinner"></i>
+      <span>Cargando datos del catálogo...</span>
+    </div>
+  } @else {
+    <div class="professors-list">
+      @for (item of profesoresConMaterias(); track item.profesor.id) {
+        <div class="professor-panel glass-card">
+          <!-- Professor Header -->
+          <div class="prof-header">
+            <div class="prof-avatar">
+              <i class="pi pi-user"></i>
+            </div>
+            <div class="prof-details">
+              <span class="badge badge-primary">Docente #0{{ item.profesor.id }}</span>
+              <h3>{{ item.profesor.nombreCompleto || (item.profesor.nombres + ' ' + item.profesor.apellidos) }}</h3>
+              <span class="prof-id">Documento: {{ item.profesor.identificacion }}</span>
+            </div>
+            <div class="prof-badge">
+              <span class="badge badge-success">
+                <i class="pi pi-check"></i> {{ item.materias.length }} Materias Asignadas
+              </span>
+            </div>
+          </div>
+
+          <!-- Subject Cards for this Professor -->
+          <div class="mats-grid">
+            @for (materia of item.materias; track materia.id) {
+              <div class="mat-item-card">
+                <div class="mat-top">
+                  <span class="badge badge-info">3 Créditos</span>
+                  <span class="code">MAT-0{{ materia.id }}</span>
+                </div>
+                <h4>{{ materia.nombre }}</h4>
+                <div class="mat-foot">
+                  <span class="enrolled-badge">
+                    <i class="pi pi-users text-primary"></i>
+                    <span>{{ getInscritosCount(materia.id) }} alumnos inscritos</span>
+                  </span>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

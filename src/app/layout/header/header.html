@@ -1,0 +1,62 @@
+<header class="app-header">
+  <div class="header-container">
+    <!-- Brand / Logo -->
+    <a routerLink="/" class="brand-link" (click)="closeMobileMenu()">
+      <div class="brand-icon">
+        <i class="pi pi-graduation-cap"></i>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">CAMPUS<span class="brand-accent">CREDITS</span></span>
+        <span class="brand-subtitle">Portal de Registro Académico</span>
+      </div>
+    </a>
+
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav">
+      @for (item of navItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="nav-link"
+        >
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </nav>
+
+    <!-- Program Badge & Quick Info -->
+    <div class="header-actions">
+      <div class="program-pill">
+        <i class="pi pi-bolt"></i>
+        <span>Prog. 9 Créditos (3 Materias)</span>
+      </div>
+
+      <!-- Mobile Hamburger Button -->
+      <button
+        class="mobile-toggle"
+        (click)="toggleMobileMenu()"
+        [attr.aria-label]="'Abrir menú'"
+      >
+        <i [class]="isMobileMenuOpen() ? 'pi pi-times' : 'pi pi-bars'"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Dropdown Navigation -->
+  @if (isMobileMenuOpen()) {
+    <div class="mobile-nav">
+      @for (item of navItems; track item.route) {
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          class="mobile-nav-link"
+          (click)="closeMobileMenu()"
+        >
+          <i [class]="item.icon"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      }
+    </div>
+  }
+</header>

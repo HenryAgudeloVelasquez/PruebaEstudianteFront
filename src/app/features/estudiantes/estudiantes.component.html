@@ -1,0 +1,407 @@
+<div class="app-container">
+  <p-toast></p-toast>
+  <p-confirmdialog></p-confirmdialog>
+
+  <!-- Header Section -->
+  <div class="page-top-bar">
+    <div>
+      <h1 class="page-title">
+        <i class="pi pi-users text-primary"></i>
+        <span>Gestión y Registro de Estudiantes</span>
+      </h1>
+      <p class="page-subtitle">
+        CRUD en línea para registro, consulta y administración de estudiantes adscritos al programa de créditos académicos.
+      </p>
+    </div>
+
+    <button class="btn btn-primary" (click)="openNew()">
+      <i class="pi pi-user-plus"></i>
+      <span>Nuevo Registro en Línea</span>
+    </button>
+  </div>
+
+  <!-- Summary Metric Cards -->
+  <div class="stats-grid">
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-cyan">
+        <i class="pi pi-users"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Total Registrados</span>
+        <span class="stat-value">{{ estudiantes().length }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-emerald">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Estudiantes Activos</span>
+        <span class="stat-value">{{ activosCount() }}</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-purple">
+        <i class="pi pi-graduation-cap"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Programa de Créditos</span>
+        <span class="stat-value">3 Mat / 9 Créditos</span>
+      </div>
+    </div>
+
+    <div class="stat-card glass-card">
+      <div class="stat-icon icon-amber">
+        <i class="pi pi-shield"></i>
+      </div>
+      <div class="stat-content">
+        <span class="stat-label">Profesores Cátedra</span>
+        <span class="stat-value">5 Docentes (2 c/u)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Container -->
+  <div class="content-panel glass-card">
+    <div class="panel-header">
+      <div class="panel-title-area">
+        <h3>Directorio General de Estudiantes</h3>
+        <span class="panel-counter">({{ filteredEstudiantes().length }} registros visibles en línea)</span>
+      </div>
+
+      <!-- Search Box -->
+      <div class="search-box">
+        <i class="pi pi-search"></i>
+        <input
+          type="text"
+          [value]="searchTerm()"
+          (input)="applyFilter($any($event.target).value)"
+          placeholder="Buscar por nombre, documento o ciudad..."
+        />
+        @if (searchTerm()) {
+          <button class="clear-btn" (click)="applyFilter('')">
+            <i class="pi pi-times"></i>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Table -->
+    @if (loading()) {
+      <div class="loading-state">
+        <i class="pi pi-spin pi-spinner"></i>
+        <span>Cargando estudiantes en línea...</span>
+      </div>
+    } @else if (filteredEstudiantes().length === 0) {
+      <div class="empty-state">
+        <i class="pi pi-inbox"></i>
+        <h4>No se encontraron estudiantes</h4>
+        <p>No hay registros coincidentes o la base de datos no tiene estudiantes registrados aún.</p>
+        <button class="btn btn-outline" (click)="openNew()">
+          <i class="pi pi-plus"></i> Registrar el Primer Estudiante
+        </button>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="custom-table">
+          <thead>
+            <tr>
+              <th>Estudiante</th>
+              <th>Documento</th>
+              <th>Contacto</th>
+              <th>Ciudad</th>
+              <th>Estado</th>
+              <th>Fecha Registro</th>
+              <th class="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (est of filteredEstudiantes(); track est.id) {
+              <tr>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar">
+                      {{ (est.nombres || 'E').charAt(0) }}{{ (est.apellidos || 'E').charAt(0) }}
+                    </div>
+                    <div>
+                      <div class="user-name">{{ est.nombreCompleto || (est.nombres + ' ' + est.apellidos) }}</div>
+                      <div class="user-id-sub">ID: #{{ est.id }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="badge badge-primary">{{ est.tipoDocumento || 'CC' }}</span>
+                  <span class="doc-number">{{ est.identificacion }}</span>
+                </td>
+                <td>
+                  <div class="email-text">
+                    <i class="pi pi-envelope"></i>
+                    <span>{{ est.correoElectronico }}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="city-text">
+                    <i class="pi pi-map-marker"></i>
+                    <span>{{ est.ciudadResidencia || 'N/A' }}</span>
+                  </span>
+                </td>
+                <td>
+                  <span
+                    class="badge"
+                    [class.badge-success]="est.estado"
+                    [class.badge-danger]="!est.estado"
+                  >
+                    <i [class]="est.estado ? 'pi pi-check' : 'pi pi-times'"></i>
+                    {{ est.estado ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <span class="date-text">{{ est.fechaRegistro ? (est.fechaRegistro | date:'dd/MM/yyyy') : 'Hoy' }}</span>
+                </td>
+                <td class="text-right">
+                  <div class="action-buttons">
+                    <button
+                      class="btn-icon"
+                      title="Ver Detalle y Materias"
+                      (click)="viewDetail(est)"
+                    >
+                      <i class="pi pi-eye"></i>
+                    </button>
+                    <button
+                      class="btn-icon"
+                      title="Editar Estudiante"
+                      (click)="openEdit(est)"
+                    >
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button
+                      class="btn-icon"
+                      [title]="est.estado ? 'Inactivar' : 'Activar'"
+                      (click)="toggleEstado(est)"
+                    >
+                      <i [class]="est.estado ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
+                    </button>
+                    <button
+                      class="btn-icon btn-danger"
+                      title="Eliminar Estudiante"
+                      (click)="confirmDelete(est)"
+                    >
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Create / Edit Dialog -->
+  <p-dialog
+    [(visible)]="isDialogVisible"
+    [header]="isEditing() ? 'Editar Datos del Estudiante' : 'Registro de Estudiante en Línea'"
+    [modal]="true"
+    [style]="{ width: '92vw', maxWidth: '640px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    <form [formGroup]="estudianteForm" (ngSubmit)="saveEstudiante()" class="dialog-form">
+      <div class="form-grid">
+        <!-- Tipo Documento -->
+        <div class="form-group">
+          <label>Tipo Documento *</label>
+          <select formControlName="tipoDocumento" class="form-control">
+            <option value="CC">Cédula de Ciudadanía (CC)</option>
+            <option value="TI">Tarjeta de Identidad (TI)</option>
+            <option value="CE">Cédula de Extranjería (CE)</option>
+            <option value="PAS">Pasaporte (PAS)</option>
+          </select>
+        </div>
+
+        <!-- Identificación -->
+        <div class="form-group">
+          <label>Número de Identificación *</label>
+          <input
+            type="text"
+            formControlName="identificacion"
+            class="form-control"
+            placeholder="Ej. 1020304050"
+          />
+          @if (estudianteForm.get('identificacion')?.invalid && estudianteForm.get('identificacion')?.touched) {
+            <span class="form-error">Identificación requerida</span>
+          }
+        </div>
+
+        <!-- Nombres -->
+        <div class="form-group">
+          <label>Nombres *</label>
+          <input
+            type="text"
+            formControlName="nombres"
+            class="form-control"
+            placeholder="Ej. Juan Carlos"
+          />
+          @if (estudianteForm.get('nombres')?.invalid && estudianteForm.get('nombres')?.touched) {
+            <span class="form-error">Nombres requeridos</span>
+          }
+        </div>
+
+        <!-- Apellidos -->
+        <div class="form-group">
+          <label>Apellidos *</label>
+          <input
+            type="text"
+            formControlName="apellidos"
+            class="form-control"
+            placeholder="Ej. Pérez Gómez"
+          />
+          @if (estudianteForm.get('apellidos')?.invalid && estudianteForm.get('apellidos')?.touched) {
+            <span class="form-error">Apellidos requeridos</span>
+          }
+        </div>
+
+        <!-- Correo Electrónico -->
+        <div class="form-group full-width">
+          <label>Correo Electrónico *</label>
+          <input
+            type="email"
+            formControlName="correoElectronico"
+            class="form-control"
+            placeholder="Ej. juan.perez@universidad.edu.co"
+          />
+          @if (estudianteForm.get('correoElectronico')?.invalid && estudianteForm.get('correoElectronico')?.touched) {
+            <span class="form-error">Ingresa un correo válido</span>
+          }
+        </div>
+
+        <!-- Password (si no es edición) -->
+        @if (!isEditing()) {
+          <div class="form-group full-width">
+            <label>Contraseña Inicial *</label>
+            <input
+              type="password"
+              formControlName="password"
+              class="form-control"
+              placeholder="Contraseña segura"
+            />
+          </div>
+        }
+
+        <!-- Fecha Nacimiento -->
+        <div class="form-group">
+          <label>Fecha de Nacimiento *</label>
+          <input
+            type="date"
+            formControlName="fechaNacimiento"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Ciudad Residencia -->
+        <div class="form-group">
+          <label>Ciudad de Residencia *</label>
+          <input
+            type="text"
+            formControlName="ciudadResidencia"
+            class="form-control"
+            placeholder="Ej. Medellín, Bogotá..."
+          />
+        </div>
+      </div>
+
+      <div class="dialog-actions">
+        <button type="button" class="btn btn-outline" (click)="isDialogVisible.set(false)">
+          Cancelar
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) {
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Guardando...</span>
+          } @else {
+            <i class="pi pi-check"></i>
+            <span>{{ isEditing() ? 'Actualizar Estudiante' : 'Completar Registro' }}</span>
+          }
+        </button>
+      </div>
+    </form>
+  </p-dialog>
+
+  <!-- Detail Dialog -->
+  <p-dialog
+    [(visible)]="isDetailVisible"
+    [header]="'Detalle del Estudiante'"
+    [modal]="true"
+    [style]="{ width: '92vw', maxWidth: '620px' }"
+    [draggable]="false"
+    [resizable]="false"
+  >
+    @if (selectedEstudiante(); as est) {
+      <div class="detail-container">
+        <!-- Profile Banner -->
+        <div class="profile-banner">
+          <div class="profile-avatar">
+            {{ (est.nombres || 'E').charAt(0) }}{{ (est.apellidos || 'E').charAt(0) }}
+          </div>
+          <div>
+            <h3>{{ est.nombreCompleto || (est.nombres + ' ' + est.apellidos) }}</h3>
+            <p>{{ est.correoElectronico }}</p>
+            <span class="badge" [class.badge-success]="est.estado" [class.badge-danger]="!est.estado">
+              {{ est.estado ? 'Estudiante Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Metadata Grid -->
+        <div class="detail-grid">
+          <div class="detail-item">
+            <span class="detail-label">Identificación</span>
+            <span class="detail-value">{{ est.tipoDocumento }} - {{ est.identificacion }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Ciudad de Residencia</span>
+            <span class="detail-value">{{ est.ciudadResidencia }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Fecha de Nacimiento</span>
+            <span class="detail-value">{{ est.fechaNacimiento | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Fecha de Registro</span>
+            <span class="detail-value">{{ est.fechaRegistro ? (est.fechaRegistro | date:'dd/MM/yyyy HH:mm') : 'N/A' }}</span>
+          </div>
+        </div>
+
+        <!-- Materias Inscritas -->
+        <div class="enrolled-section">
+          <h4>
+            <i class="pi pi-book text-primary"></i>
+            <span>Materias Inscritas ({{ estudianteMaterias().length }} / 3 materias - {{ estudianteMaterias().length * 3 }} créditos)</span>
+          </h4>
+
+          @if (estudianteMaterias().length === 0) {
+            <div class="no-materias">
+              <i class="pi pi-info-circle"></i>
+              <span>El estudiante aún no tiene materias inscritas en su programa de créditos.</span>
+            </div>
+          } @else {
+            <div class="materias-list">
+              @for (rel of estudianteMaterias(); track rel.id) {
+                <div class="materia-chip">
+                  <div class="materia-icon"><i class="pi pi-bookmark"></i></div>
+                  <div class="materia-info">
+                    <strong>{{ rel.materiaNombre }}</strong>
+                    <span>Profesor: {{ rel.profesorNombre }} | 3 Créditos</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </p-dialog>
+</div>

@@ -1,0 +1,202 @@
+<div class="app-container">
+  <!-- Header -->
+  <div class="page-top-bar">
+    <div>
+      <h1 class="page-title">
+        <i class="pi pi-id-card text-primary"></i>
+        <span>Compañeros de Clase</span>
+      </h1>
+      <p class="page-subtitle">
+        Consulta en línea de los alumnos con quienes compartirás cada una de tus asignaturas matriculadas (cumpliendo la política de privacidad que restringe la visualización exclusivamente al nombre).
+      </p>
+    </div>
+
+    <!-- View Switcher -->
+    <div class="view-tabs">
+      <button
+        class="tab-btn"
+        [class.active]="activeView() === 'por-estudiante'"
+        (click)="activeView.set('por-estudiante')"
+      >
+        <i class="pi pi-user"></i>
+        <span>Vista por Estudiante</span>
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="activeView() === 'por-materia'"
+        (click)="activeView.set('por-materia')"
+      >
+        <i class="pi pi-book"></i>
+        <span>Explorar por Materia</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Privacy Policy Callout Banner -->
+  <div class="privacy-banner glass-card">
+    <div class="privacy-icon">
+      <i class="pi pi-shield"></i>
+    </div>
+    <div class="privacy-text">
+      <strong>Regla de Privacidad Estudiantil (Requisito 9)</strong>
+      <p>
+        El sistema garantiza que los estudiantes sólo pueden visualizar el <strong>nombre de los compañeros de clase</strong> con quienes comparten aula, resguardando datos personales como documento, dirección, notas o contraseñas.
+      </p>
+    </div>
+  </div>
+
+  <!-- VIEW 1: VISTA POR ESTUDIANTE -->
+  @if (activeView() === 'por-estudiante') {
+    <!-- Student Selector -->
+    <div class="selector-card glass-card">
+      <div class="selector-wrap">
+        <label for="estudiante-select-comp">
+          <i class="pi pi-user text-primary"></i>
+          <span>Selecciona tu perfil de Estudiante:</span>
+        </label>
+        <select
+          id="estudiante-select-comp"
+          class="form-control"
+          [ngModel]="selectedEstudianteId()"
+          (ngModelChange)="selectedEstudianteId.set($event ? +$event : null)"
+        >
+          @for (est of estudiantes(); track est.id) {
+            <option [value]="est.id">
+              {{ est.nombreCompleto || (est.nombres + ' ' + est.apellidos) }}
+            </option>
+          }
+        </select>
+      </div>
+
+      @if (activeEstudiante(); as activeEst) {
+        <div class="current-profile">
+          <div class="profile-pic">
+            {{ (activeEst.nombres || 'E').charAt(0) }}{{ (activeEst.apellidos || 'E').charAt(0) }}
+          </div>
+          <div class="profile-meta">
+            <span class="profile-title">{{ activeEst.nombreCompleto || (activeEst.nombres + ' ' + activeEst.apellidos) }}</span>
+            <span class="profile-courses">
+              <i class="pi pi-bookmark"></i> {{ studentClassesWithCompaneros().length }} Materia(s) Matriculadas
+            </span>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Enrolled Classes & Classmates -->
+    @if (studentClassesWithCompaneros().length === 0) {
+      <div class="empty-classes glass-card">
+        <i class="pi pi-folder-open"></i>
+        <h3>Sin Materias Inscritas</h3>
+        <p>Este estudiante aún no ha formalizado la matrícula de sus materias en el programa de créditos.</p>
+        <a routerLink="/inscripciones" class="btn btn-primary">
+          <i class="pi pi-book"></i>
+          <span>Ir a Inscribir Materias</span>
+        </a>
+      </div>
+    } @else {
+      <div class="classes-grid">
+        @for (group of studentClassesWithCompaneros(); track group.materia.id) {
+          <div class="class-card glass-card">
+            <!-- Header Class -->
+            <div class="class-head">
+              <div class="class-title-block">
+                <span class="badge badge-primary">3 Créditos</span>
+                <h3>{{ group.materia.nombre }}</h3>
+                <div class="teacher-inline">
+                  <i class="pi pi-user text-primary"></i>
+                  <span>Profesor: <strong>{{ group.materia.profesorNombre }}</strong></span>
+                </div>
+              </div>
+              <div class="class-counter">
+                <span class="counter-number">{{ group.companerosNombres.length }}</span>
+                <span class="counter-label">Compañeros</span>
+              </div>
+            </div>
+
+            <!-- Classmates List (ONLY NAMES) -->
+            <div class="classmates-section">
+              <div class="classmates-header">
+                <i class="pi pi-users text-primary"></i>
+                <span>Alumnos en esta clase (sólo nombre):</span>
+              </div>
+
+              @if (group.companerosNombres.length === 0) {
+                <div class="no-classmates">
+                  <i class="pi pi-info-circle"></i>
+                  <span>Aún no hay otros compañeros matriculados en esta clase. Eres el primer inscrito.</span>
+                </div>
+              } @else {
+                <div class="names-grid">
+                  @for (nombre of group.companerosNombres; track nombre) {
+                    <div class="name-chip">
+                      <div class="name-avatar">
+                        <i class="pi pi-user"></i>
+                      </div>
+                      <span class="student-name-text">{{ nombre }}</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+  <!-- VIEW 2: EXPLORAR POR MATERIA -->
+  @if (activeView() === 'por-materia') {
+    <div class="materia-explore-card glass-card">
+      <div class="materia-select-wrap">
+        <label for="materia-selector">
+          <i class="pi pi-book text-primary"></i>
+          <span>Selecciona una de las 10 Materias del Catálogo:</span>
+        </label>
+        <select
+          id="materia-selector"
+          class="form-control"
+          [ngModel]="selectedMateriaId()"
+          (ngModelChange)="selectedMateriaId.set($event ? +$event : null)"
+        >
+          @for (mat of materias(); track mat.id) {
+            <option [value]="mat.id">
+              {{ mat.nombre }} (Prof. {{ mat.profesorNombre }} - 3 Créditos)
+            </option>
+          }
+        </select>
+      </div>
+
+      <div class="roster-section">
+        <div class="roster-head">
+          <div class="roster-info">
+            <span class="badge badge-primary">3 Créditos</span>
+            <h4>Alumnos Matriculados en la Clase</h4>
+            <span class="roster-sub">Visualizando únicamente nombres de los estudiantes registrados:</span>
+          </div>
+          <span class="badge badge-success">
+            {{ singleMateriaCompaneros().length }} Estudiante(s)
+          </span>
+        </div>
+
+        @if (singleMateriaCompaneros().length === 0) {
+          <div class="empty-roster">
+            <i class="pi pi-inbox"></i>
+            <p>No hay alumnos matriculados en esta asignatura actualmente.</p>
+          </div>
+        } @else {
+          <div class="names-grid">
+            @for (nom of singleMateriaCompaneros(); track nom) {
+              <div class="name-chip">
+                <div class="name-avatar">
+                  <i class="pi pi-user"></i>
+                </div>
+                <span class="student-name-text">{{ nom }}</span>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>
