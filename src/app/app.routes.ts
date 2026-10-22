@@ -10,25 +10,25 @@ export const routes: Routes = [
     path: 'estudiantes',
     loadComponent: () =>
       import('./features/estudiantes/estudiantes.component').then(m => m.EstudiantesComponent),
-    title: 'Estudiantes & Registro - CampusCredits'
+    title: 'Estudiantes & Registro - Henry Agudelo'
   },
   {
     path: 'inscripciones',
     loadComponent: () =>
       import('./features/inscripciones/inscripciones.component').then(m => m.InscripcionesComponent),
-    title: 'Inscripción de Materias - CampusCredits'
+    title: 'Inscripción de Materias - Henry Agudelo'
   },
   {
     path: 'companeros',
     loadComponent: () =>
       import('./features/companeros/companeros.component').then(m => m.CompanerosComponent),
-    title: 'Compañeros de Clase - CampusCredits'
+    title: 'Compañeros de Clase - Henry Agudelo'
   },
   {
     path: 'catalogo',
     loadComponent: () =>
       import('./features/catalogo/catalogo.component').then(m => m.CatalogoComponent),
-    title: 'Catálogo Académico - CampusCredits'
+    title: 'Catálogo Académico - Henry Agudelo'
   },
   {
     path: '**',

@@ -1,7 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { EstudiantesService } from '../../core/services/estudiantes.service';
 import { MateriasService } from '../../core/services/materias.service';
 import { InscripcionesService } from '../../core/services/inscripciones.service';
@@ -22,6 +22,7 @@ export interface MateriaCompanerosGroup {
   styleUrl: './companeros.component.scss',
 })
 export class CompanerosComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly estudiantesService = inject(EstudiantesService);
   private readonly materiasService = inject(MateriasService);
   private readonly inscripcionesService = inject(InscripcionesService);
@@ -82,6 +83,12 @@ export class CompanerosComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['estudianteId']) {
+        const id = Number(params['estudianteId']);
+        this.selectedEstudianteId.set(id);
+      }
+    });
     this.loadData();
   }
 

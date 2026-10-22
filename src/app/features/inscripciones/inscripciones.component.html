@@ -1,224 +1,637 @@
 <div class="app-container">
   <p-toast></p-toast>
 
-  <!-- Page Header -->
+  <!-- Page Top Bar -->
   <div class="page-top-bar">
     <div>
       <h1 class="page-title">
         <i class="pi pi-book text-primary"></i>
-        <span>Inscripción y Programa de Créditos</span>
+        <span>Inscripción y Matrícula Guiada</span>
       </h1>
       <p class="page-subtitle">
-        Gestión de matrícula académica sujeta al programa estricto de 9 créditos (3 materias de 3 créditos) sin repetición de profesor.
+        Asistente paso a paso para la selección y asignación de 3 materias (9 créditos) sin conflicto docente.
       </p>
     </div>
+
+    <!-- Stepper Mini Controls -->
+    <div class="top-actions">
+      @if (currentStep() === 3) {
+        <button class="btn btn-outline" (click)="printComprobante()">
+          <i class="pi pi-print"></i>
+          <span>Imprimir Comprobante</span>
+        </button>
+      }
+      <button class="btn btn-ghost" (click)="goToEstudiantes()">
+        <i class="pi pi-arrow-left"></i>
+        <span>Directorio</span>
+      </button>
+    </div>
   </div>
 
-  <!-- Student Selector & Rules Banner -->
-  <div class="selector-banner glass-card">
-    <div class="selector-controls">
-      <div class="selector-field">
-        <label for="estudiante-select">
-          <i class="pi pi-user text-primary"></i>
-          <span>Selecciona el Estudiante a Matricular:</span>
-        </label>
-        <select
-          id="estudiante-select"
-          class="form-control-styled"
-          [ngModel]="selectedEstudianteId()"
-          (ngModelChange)="onSelectEstudiante($event ? +$event : null)"
-        >
-          <option [ngValue]="null" disabled>-- Selecciona un estudiante registrado --</option>
-          @for (est of estudiantes(); track est.id) {
-            <option [value]="est.id">
-              {{ est.nombreCompleto || (est.nombres + ' ' + est.apellidos) }} ({{ est.tipoDocumento }}: {{ est.identificacion }})
-            </option>
-          }
-        </select>
-      </div>
-
-      @if (activeEstudiante(); as activeEst) {
-        <div class="active-student-badge">
-          <div class="student-avatar">
-            {{ (activeEst.nombres || 'E').charAt(0) }}{{ (activeEst.apellidos || 'E').charAt(0) }}
-          </div>
-          <div>
-            <div class="student-name">{{ activeEst.nombreCompleto || (activeEst.nombres + ' ' + activeEst.apellidos) }}</div>
-            <div class="student-email">{{ activeEst.correoElectronico }}</div>
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Academic Progress Bar -->
-    <div class="progress-section">
-      <div class="progress-labels">
-        <span class="label-title">Progreso del Programa Académico:</span>
-        <div class="progress-tags">
-          <span class="badge badge-primary">
-            <i class="pi pi-bookmark"></i> {{ materiasInscritasCount() }} / {{ MAX_MATERIAS }} Materias
-          </span>
-          <span class="badge" [class.badge-success]="creditosAcumulados() === MAX_CREDITOS" [class.badge-warning]="creditosAcumulados() < MAX_CREDITOS">
-            <i class="pi pi-bolt"></i> {{ creditosAcumulados() }} / {{ MAX_CREDITOS }} Créditos
-          </span>
-        </div>
-      </div>
-
-      <div class="progress-bar-track">
-        <div
-          class="progress-bar-fill"
-          [style.width.%]="porcentajeProgreso()"
-          [class.complete]="porcentajeProgreso() === 100"
-        ></div>
-      </div>
-
-      <div class="progress-footnote">
-        @if (materiasInscritasCount() === 0) {
-          <span class="text-muted"><i class="pi pi-info-circle"></i> Selecciona 3 materias para completar tus 9 créditos del semestre.</span>
-        } @else if (materiasInscritasCount() < MAX_MATERIAS) {
-          <span class="text-warning"><i class="pi pi-clock"></i> Te faltan {{ MAX_MATERIAS - materiasInscritasCount() }} materia(s) ({{ (MAX_MATERIAS - materiasInscritasCount()) * CREDITOS_POR_MATERIA }} créditos) para completar tu matrícula.</span>
+  <!-- Interactive Stepper Wizard Bar -->
+  <div class="wizard-stepper glass-card">
+    <!-- Step 1 -->
+    <div
+      class="wizard-step"
+      [class.active]="currentStep() === 1"
+      [class.completed]="selectedEstudianteId() !== null"
+      (click)="setStep(1)"
+    >
+      <div class="step-indicator">
+        @if (selectedEstudianteId()) {
+          <i class="pi pi-check"></i>
         } @else {
-          <span class="text-success"><i class="pi pi-check-circle"></i> ¡Programa completado con éxito! Tienes tus 3 materias (9 créditos) asignadas con 3 docentes diferentes.</span>
+          <span>1</span>
         }
       </div>
+      <div class="step-info">
+        <span class="step-sub">Paso 1</span>
+        <strong class="step-name">Estudiante</strong>
+        <small class="step-status">
+          {{ selectedEstudianteId() ? (activeEstudiante()?.nombres || 'Identificado') : 'Seleccionar' }}
+        </small>
+      </div>
+    </div>
+
+    <div class="step-divider" [class.filled]="selectedEstudianteId() !== null"></div>
+
+    <!-- Step 2 -->
+    <div
+      class="wizard-step"
+      [class.active]="currentStep() === 2"
+      [class.completed]="materiasInscritasCount() === MAX_MATERIAS"
+      (click)="setStep(2)"
+    >
+      <div class="step-indicator">
+        @if (materiasInscritasCount() === MAX_MATERIAS) {
+          <i class="pi pi-check"></i>
+        } @else {
+          <span>2</span>
+        }
+      </div>
+      <div class="step-info">
+        <span class="step-sub">Paso 2</span>
+        <strong class="step-name">Selección de Materias</strong>
+        <small class="step-status">
+          {{ materiasInscritasCount() }} / {{ MAX_MATERIAS }} materias ({{ creditosAcumulados() }} cr)
+        </small>
+      </div>
+    </div>
+
+    <div class="step-divider" [class.filled]="materiasInscritasCount() === MAX_MATERIAS"></div>
+
+    <!-- Step 3 -->
+    <div
+      class="wizard-step"
+      [class.active]="currentStep() === 3"
+      [class.completed]="materiasInscritasCount() === MAX_MATERIAS && currentStep() === 3"
+      (click)="setStep(3)"
+    >
+      <div class="step-indicator">
+        <span>3</span>
+      </div>
+      <div class="step-info">
+        <span class="step-sub">Paso 3</span>
+        <strong class="step-name">Matrícula Oficial</strong>
+        <small class="step-status">
+          {{ materiasInscritasCount() === MAX_MATERIAS ? 'Listo para validar' : 'Comprobante' }}
+        </small>
+      </div>
     </div>
   </div>
 
-  <!-- Business Rules Accordion / Cards -->
-  <div class="rules-bar">
-    <div class="rule-box">
-      <i class="pi pi-list text-primary"></i>
-      <div>
-        <strong>10 Materias Ofertadas</strong>
-        <span>Catálogo curricular completo</span>
+  <!-- New Student Welcome Banner (if arriving from registration) -->
+  @if (isNewStudentFlow() && activeEstudiante(); as active) {
+    <div class="welcome-guide-banner glass-card glow">
+      <div class="welcome-icon">
+        <i class="pi pi-sparkles"></i>
       </div>
-    </div>
-    <div class="rule-box">
-      <i class="pi pi-database text-cyan"></i>
-      <div>
-        <strong>3 Créditos por Materia</strong>
-        <span>Carga homogénea estándar</span>
+      <div class="welcome-text">
+        <h4>¡Excelente! Registro completado para {{ active.nombreCompleto || (active.nombres + ' ' + active.apellidos) }}</h4>
+        <p>
+          Continuemos con el proceso guiado. Elige a continuación las 3 materias (3 créditos c/u) para completar la carga del semestre respetando la política de no repetir profesor.
+        </p>
       </div>
+      <button class="btn btn-primary" (click)="setStep(2)" *ngIf="currentStep() === 1">
+        <span>Comenzar Selección</span>
+        <i class="pi pi-arrow-right"></i>
+      </button>
     </div>
-    <div class="rule-box">
-      <i class="pi pi-check-square text-emerald"></i>
-      <div>
-        <strong>Límite Estricto: 3 Materias</strong>
-        <span>Total de 9 créditos aprobados</span>
-      </div>
-    </div>
-    <div class="rule-box highlight-rule">
-      <i class="pi pi-shield text-amber"></i>
-      <div>
-        <strong>Regla Anti-Cruce Docente</strong>
-        <span>5 profesores (2 materias c/u). Prohibido repetir profesor.</span>
-      </div>
-    </div>
-  </div>
+  }
 
-  <!-- Materias Grid -->
-  <div class="materias-section">
-    <div class="section-title-wrap">
-      <h2>Catálogo de las 10 Materias del Programa</h2>
-      <span class="section-hint">Cada materia equivale a 3 créditos. Al inscribir una materia, la segunda materia del mismo docente se bloqueará automáticamente.</span>
-    </div>
+  <!-- ========================================== -->
+  <!-- STEP 1: SELECCIÓN / CONFIRMACIÓN DE ALUMNO -->
+  <!-- ========================================== -->
+  @if (currentStep() === 1) {
+    <div class="step-content animate-fade">
+      <div class="section-card glass-card">
+        <div class="card-title-row">
+          <div>
+            <h3>Paso 1: Confirmar o Seleccionar Estudiante</h3>
+            <p class="text-secondary">Identifica al estudiante que realizará la matrícula de sus 9 créditos.</p>
+          </div>
+          <a routerLink="/estudiantes" class="btn btn-outline btn-sm">
+            <i class="pi pi-user-plus"></i>
+            <span>Registrar Nuevo Alumno</span>
+          </a>
+        </div>
 
-    @if (materias().length === 0) {
-      <div class="loading-catalog">
-        <i class="pi pi-spin pi-spinner"></i>
-        <span>Cargando materias del servidor...</span>
-      </div>
-    } @else {
-      <div class="materias-grid">
-        @for (materia of materias(); track materia.id) {
-          <div
-            class="materia-card glass-card"
-            [class.card-enrolled]="isInscrita(materia.id)"
-            [class.card-conflict]="isBloqueadaPorProfesor(materia)"
-            [class.card-limit]="isBloqueadaPorLimite(materia)"
-          >
-            <!-- Card Header -->
-            <div class="card-head">
-              <span class="badge badge-primary">
-                <i class="pi pi-bolt"></i> {{ materia.creditos }} Créditos
-              </span>
-              <span class="materia-code">MAT-0{{ materia.id }}</span>
+        <!-- Active Student Highlight Card -->
+        @if (activeEstudiante(); as activeEst) {
+          <div class="student-profile-box">
+            <div class="student-avatar-lg">
+              {{ (activeEst.nombres || 'E').charAt(0) }}{{ (activeEst.apellidos || 'E').charAt(0) }}
             </div>
-
-            <!-- Subject Details -->
-            <h3 class="materia-title">{{ materia.nombre }}</h3>
-
-            <div class="teacher-block">
-              <div class="teacher-avatar">
-                <i class="pi pi-user"></i>
-              </div>
-              <div class="teacher-data">
-                <span class="teacher-role">Docente Titular</span>
-                <strong class="teacher-name">{{ materia.profesorNombre || 'Profesor Asignado' }}</strong>
-              </div>
-            </div>
-
-            <!-- Conflict / Status Notifications -->
-            @if (isInscrita(materia.id)) {
-              <div class="status-msg status-enrolled">
-                <i class="pi pi-check-circle"></i>
-                <span>Materia Inscrita en tu Programa</span>
-              </div>
-            } @else if (isBloqueadaPorProfesor(materia)) {
-              <div class="status-msg status-conflict">
-                <i class="pi pi-exclamation-triangle"></i>
-                <span>
-                  Bloqueada: Ya inscribiste <strong>"{{ getNombreMateriaConflictoProfesor(materia) }}"</strong> con {{ materia.profesorNombre }}. No puedes repetir docente.
+            <div class="student-profile-info">
+              <div class="name-status">
+                <h2>{{ activeEst.nombreCompleto || (activeEst.nombres + ' ' + activeEst.apellidos) }}</h2>
+                <span class="badge" [class.badge-success]="activeEst.estado" [class.badge-danger]="!activeEst.estado">
+                  {{ activeEst.estado ? 'Estudiante Activo' : 'Inactivo' }}
                 </span>
               </div>
-            } @else if (isBloqueadaPorLimite(materia)) {
-              <div class="status-msg status-limit">
-                <i class="pi pi-lock"></i>
-                <span>Límite alcanzado: Ya tienes 3 materias (9 créditos)</span>
+              <div class="student-meta-tags">
+                <span class="meta-tag"><i class="pi pi-id-card"></i> {{ activeEst.tipoDocumento }}: {{ activeEst.identificacion }}</span>
+                <span class="meta-tag"><i class="pi pi-envelope"></i> {{ activeEst.correoElectronico }}</span>
+                <span class="meta-tag"><i class="pi pi-map-marker"></i> {{ activeEst.ciudadResidencia }}</span>
               </div>
-            } @else {
-              <div class="status-msg status-available">
-                <i class="pi pi-sparkles"></i>
-                <span>Materia Disponible para Inscripción</span>
-              </div>
-            }
+            </div>
 
-            <!-- Card Actions -->
-            <div class="card-footer-action">
-              @if (isInscrita(materia.id)) {
-                <button
-                  class="btn btn-danger-soft full-btn"
-                  (click)="retirarMateria(materia)"
-                  [disabled]="processingMateriaId() === materia.id"
-                >
-                  @if (processingMateriaId() === materia.id) {
-                    <i class="pi pi-spin pi-spinner"></i>
-                    <span>Retirando...</span>
-                  } @else {
-                    <i class="pi pi-times"></i>
-                    <span>Retirar Materia</span>
-                  }
-                </button>
-              } @else {
-                <button
-                  class="btn btn-primary full-btn"
-                  (click)="inscribirMateria(materia)"
-                  [disabled]="!canInscribir(materia) || processingMateriaId() === materia.id"
-                  [title]="isBloqueadaPorProfesor(materia) ? 'Bloqueada por cruce de profesor' : (isBloqueadaPorLimite(materia) ? 'Límite de 3 materias alcanzado' : 'Inscribir materia')"
-                >
-                  @if (processingMateriaId() === materia.id) {
-                    <i class="pi pi-spin pi-spinner"></i>
-                    <span>Inscribiendo...</span>
-                  } @else {
-                    <i class="pi pi-plus"></i>
-                    <span>Inscribir (+3 Créditos)</span>
-                  }
-                </button>
-              }
+            <div class="student-progress-quick">
+              <div class="quick-metric">
+                <span class="quick-val">{{ materiasInscritasCount() }} / {{ MAX_MATERIAS }}</span>
+                <span class="quick-lbl">Materias</span>
+              </div>
+              <div class="quick-metric">
+                <span class="quick-val">{{ creditosAcumulados() }} / {{ MAX_CREDITOS }}</span>
+                <span class="quick-lbl">Créditos</span>
+              </div>
             </div>
           </div>
         }
+
+        <!-- Selector dropdown for existing students -->
+        <div class="select-another-box">
+          <label for="estudiante-select">
+            <i class="pi pi-search"></i>
+            <span>¿Deseas cambiar de estudiante? Selecciona de la lista:</span>
+          </label>
+          <div class="select-row">
+            <select
+              id="estudiante-select"
+              class="form-control-styled"
+              [ngModel]="selectedEstudianteId()"
+              (ngModelChange)="onSelectEstudiante($event ? +$event : null)"
+            >
+              <option [ngValue]="null" disabled>-- Selecciona un estudiante registrado --</option>
+              @for (est of filteredEstudiantes(); track est.id) {
+                <option [value]="est.id">
+                  {{ est.nombreCompleto || (est.nombres + ' ' + est.apellidos) }} ({{ est.tipoDocumento }}: {{ est.identificacion }})
+                </option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="step-footer-actions">
+          <span></span>
+          <button
+            class="btn btn-primary btn-lg"
+            [disabled]="!selectedEstudianteId()"
+            (click)="setStep(2)"
+          >
+            <span>Continuar a Selección de Materias (Paso 2)</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+        </div>
       </div>
-    }
-  </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- STEP 2: ASISTENTE DE SELECCIÓN DE MATERIAS -->
+  <!-- ========================================== -->
+  @if (currentStep() === 2) {
+    <div class="step-content animate-fade">
+      <!-- Active Student Mini Banner -->
+      @if (activeEstudiante(); as activeEst) {
+        <div class="active-student-bar glass-card">
+          <div class="mini-student-info">
+            <div class="mini-avatar">
+              {{ (activeEst.nombres || 'E').charAt(0) }}{{ (activeEst.apellidos || 'E').charAt(0) }}
+            </div>
+            <div>
+              <div class="mini-name">
+                Matriculando a: <strong>{{ activeEst.nombreCompleto || (activeEst.nombres + ' ' + activeEst.apellidos) }}</strong>
+              </div>
+              <div class="mini-doc">{{ activeEst.tipoDocumento }}: {{ activeEst.identificacion }} | {{ activeEst.ciudadResidencia }}</div>
+            </div>
+          </div>
+
+          <button class="btn btn-outline btn-sm" (click)="setStep(1)">
+            <i class="pi pi-user-edit"></i>
+            <span>Cambiar Alumno</span>
+          </button>
+        </div>
+      }
+
+      <!-- Academic Slots / Ranuras Visuales -->
+      <div class="slots-container glass-card">
+        <div class="slots-header">
+          <div>
+            <h3>Ranuras del Programa Académico (3 Materias / 9 Créditos)</h3>
+            <p>Cada ranura equivale a una asignatura obligatoria de 3 créditos con docentes diferentes.</p>
+          </div>
+          <div class="slots-credit-pill">
+            <i class="pi pi-bolt"></i>
+            <span>{{ creditosAcumulados() }} / {{ MAX_CREDITOS }} Créditos</span>
+          </div>
+        </div>
+
+        <!-- 3 Interactive Slots -->
+        <div class="slots-grid">
+          @for (slot of enrolledSlots(); track slot.index) {
+            <div class="slot-card" [class.filled]="slot.filled" [class.empty]="!slot.filled">
+              <div class="slot-badge">
+                <i [class]="slot.filled ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                <span>Ranura #{{ slot.index }}</span>
+              </div>
+
+              @if (slot.filled && slot.relacion) {
+                <div class="slot-body">
+                  <h4 class="slot-subject-title">{{ slot.relacion.materiaNombre }}</h4>
+                  <div class="slot-teacher">
+                    <i class="pi pi-user"></i>
+                    <span>Prof. {{ slot.relacion.profesorNombre }}</span>
+                  </div>
+                  <div class="slot-credits-tag">
+                    <span class="badge badge-primary">+3 Créditos</span>
+                  </div>
+                  <button
+                    class="btn-remove-slot"
+                    (click)="slot.materia && retirarMateria(slot.materia)"
+                    [disabled]="processingMateriaId() === slot.relacion.idMateria"
+                  >
+                    <i class="pi pi-trash"></i>
+                    <span>Retirar Asignatura</span>
+                  </button>
+                </div>
+              } @else {
+                <div class="slot-body empty-body">
+                  <div class="empty-icon-pulse">
+                    <i class="pi pi-plus"></i>
+                  </div>
+                  <h4>Asignatura Pendiente</h4>
+                  <p>Selecciona una materia del catálogo disponible abajo (+3 créditos).</p>
+                </div>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Dynamic Progress Bar -->
+        <div class="slot-progress-wrap">
+          <div class="progress-bar-track">
+            <div
+              class="progress-bar-fill"
+              [style.width.%]="porcentajeProgreso()"
+              [class.complete]="porcentajeProgreso() === 100"
+            ></div>
+          </div>
+          <div class="progress-feedback">
+            @if (materiasInscritasCount() === 0) {
+              <span class="text-muted"><i class="pi pi-info-circle"></i> Inicia tu inscripción seleccionando tu 1ª asignatura.</span>
+            } @else if (materiasInscritasCount() < MAX_MATERIAS) {
+              <span class="text-warning">
+                <i class="pi pi-clock"></i> Te falta(n) {{ MAX_MATERIAS - materiasInscritasCount() }} materia(s) para completar los 9 créditos.
+              </span>
+            } @else {
+              <span class="text-success highlight-pulse">
+                <i class="pi pi-check-circle"></i> ¡Felicidades! Carga máxima de 9 créditos completada satisfactoriamente.
+              </span>
+            }
+          </div>
+        </div>
+
+        <!-- Big CTA Button to Step 3 when completed -->
+        @if (materiasInscritasCount() === MAX_MATERIAS) {
+          <div class="step-transition-banner animate-fade">
+            <div class="banner-text">
+              <i class="pi pi-verified text-success"></i>
+              <div>
+                <strong>¡Has completado tus 3 asignaturas y 9 créditos reglamentarios!</strong>
+                <span>Puedes avanzar al Paso 3 para revisar tu comprobante oficial y formalizar la matrícula.</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-lg btn-glow" (click)="setStep(3)">
+              <span>Ver Matrícula Oficial (Paso 3)</span>
+              <i class="pi pi-arrow-right"></i>
+            </button>
+          </div>
+        }
+      </div>
+
+      <!-- Catalog of Available Subjects -->
+      <div class="catalog-section">
+        <div class="catalog-header">
+          <div>
+            <h3>Catálogo de Asignaturas Ofertadas</h3>
+            <p class="text-secondary">Recuerda: Si eliges una materia, la segunda materia del mismo docente quedará bloqueada automáticamente.</p>
+          </div>
+
+          <!-- Filters -->
+          <div class="catalog-filters">
+            <div class="search-wrap">
+              <i class="pi pi-search"></i>
+              <input
+                type="text"
+                [(ngModel)]="searchTerm"
+                placeholder="Buscar materia o docente..."
+              />
+            </div>
+
+            <div class="filter-dropdown">
+              <select [(ngModel)]="filtroProfesor">
+                <option [ngValue]="null">Todos los Docentes (5)</option>
+                @for (prof of profesores(); track prof.id) {
+                  <option [value]="prof.id">{{ prof.nombreCompleto }}</option>
+                }
+              </select>
+            </div>
+          </div>
+        </div>
+
+        @if (loading()) {
+          <div class="loading-catalog">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Cargando materias del programa...</span>
+          </div>
+        } @else {
+          <div class="materias-grid">
+            @for (materia of filteredMaterias(); track materia.id) {
+              <div
+                class="materia-card glass-card"
+                [class.card-enrolled]="isInscrita(materia.id)"
+                [class.card-conflict]="isBloqueadaPorProfesor(materia)"
+                [class.card-limit]="isBloqueadaPorLimite(materia)"
+              >
+                <!-- Card Header -->
+                <div class="card-head">
+                  <span class="badge badge-primary">
+                    <i class="pi pi-bolt"></i> {{ materia.creditos }} Créditos
+                  </span>
+                  <span class="materia-code">MAT-0{{ materia.id }}</span>
+                </div>
+
+                <!-- Subject Title -->
+                <h3 class="materia-title">{{ materia.nombre }}</h3>
+
+                <!-- Teacher Card -->
+                <div class="teacher-block">
+                  <div class="teacher-avatar">
+                    {{ (materia.profesorNombre || 'P').charAt(0) }}
+                  </div>
+                  <div class="teacher-details">
+                    <span class="teacher-label">Docente Asignado</span>
+                    <strong class="teacher-name">{{ materia.profesorNombre }}</strong>
+                  </div>
+                </div>
+
+                <!-- Status Badges -->
+                <div class="card-status-area">
+                  @if (isInscrita(materia.id)) {
+                    <div class="status-chip chip-success">
+                      <i class="pi pi-check"></i>
+                      <span>Inscrita en tu carga académica</span>
+                    </div>
+                  } @else if (isBloqueadaPorProfesor(materia)) {
+                    <div class="status-chip chip-warning">
+                      <i class="pi pi-exclamation-triangle"></i>
+                      <span>Docente ocupado: Ya tienes "{{ getNombreMateriaConflictoProfesor(materia) }}" con este profesor</span>
+                    </div>
+                  } @else if (isBloqueadaPorLimite(materia)) {
+                    <div class="status-chip chip-muted">
+                      <i class="pi pi-lock"></i>
+                      <span>Carga máxima alcanzada (9 créditos)</span>
+                    </div>
+                  } @else {
+                    <div class="status-chip chip-available">
+                      <i class="pi pi-check-circle"></i>
+                      <span>Disponible para inscripción</span>
+                    </div>
+                  }
+                </div>
+
+                <!-- Card Action -->
+                <div class="card-action">
+                  @if (isInscrita(materia.id)) {
+                    <button
+                      class="btn btn-outline-danger btn-full"
+                      [disabled]="processingMateriaId() === materia.id"
+                      (click)="retirarMateria(materia)"
+                    >
+                      @if (processingMateriaId() === materia.id) {
+                        <i class="pi pi-spin pi-spinner"></i> Retirando...
+                      } @else {
+                        <i class="pi pi-trash"></i> Retirar Asignatura
+                      }
+                    </button>
+                  } @else {
+                    <button
+                      class="btn btn-primary btn-full"
+                      [disabled]="!canInscribir(materia) || processingMateriaId() === materia.id"
+                      (click)="inscribirMateria(materia)"
+                    >
+                      @if (processingMateriaId() === materia.id) {
+                        <i class="pi pi-spin pi-spinner"></i> Inscribiendo...
+                      } @else {
+                        <i class="pi pi-plus"></i> Inscribir Asignatura (+3 Cr)
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Bottom Step Navigation -->
+        <div class="step-footer-actions">
+          <button class="btn btn-outline" (click)="setStep(1)">
+            <i class="pi pi-arrow-left"></i>
+            <span>Volver al Paso 1: Estudiante</span>
+          </button>
+          <button
+            class="btn btn-primary"
+            (click)="setStep(3)"
+            [disabled]="materiasInscritasCount() === 0"
+          >
+            <span>Avanzar a Resumen Oficial (Paso 3)</span>
+            <i class="pi pi-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- ========================================== -->
+  <!-- STEP 3: RESUMEN Y MATRÍCULA OFICIAL        -->
+  <!-- ========================================== -->
+  @if (currentStep() === 3) {
+    <div class="step-content animate-fade">
+      <!-- Printable Certificate Box -->
+      <div class="certificate-container glass-card" id="printable-certificate">
+        <!-- Certificate Header -->
+        <div class="certificate-header">
+          <div class="univ-brand">
+            <div class="univ-logo"><i class="pi pi-graduation-cap"></i></div>
+            <div>
+              <span class="univ-name">HENRY <span class="text-primary">AGUDELO</span> UNIVERSITY</span>
+              <span class="univ-sub">Sistema de Registro y Matrícula Académica Curricular</span>
+            </div>
+          </div>
+          <div class="certificate-badge-official">
+            <span class="seal-icon"><i class="pi pi-shield"></i></span>
+            <div class="seal-text">
+              <strong>CONSTANCIA DE MATRÍCULA</strong>
+              <span>PERÍODO 2026 - SEMESTRE I</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="certificate-divider"></div>
+
+        <!-- Student Official Data Section -->
+        @if (activeEstudiante(); as activeEst) {
+          <div class="cert-student-section">
+            <div class="cert-grid">
+              <div class="cert-item">
+                <span class="cert-lbl">Nombre del Estudiante</span>
+                <strong class="cert-val">{{ activeEst.nombreCompleto || (activeEst.nombres + ' ' + activeEst.apellidos) }}</strong>
+              </div>
+              <div class="cert-item">
+                <span class="cert-lbl">Documento de Identidad</span>
+                <strong class="cert-val">{{ activeEst.tipoDocumento }} - {{ activeEst.identificacion }}</strong>
+              </div>
+              <div class="cert-item">
+                <span class="cert-lbl">Correo Electrónico Institucional</span>
+                <strong class="cert-val">{{ activeEst.correoElectronico }}</strong>
+              </div>
+              <div class="cert-item">
+                <span class="cert-lbl">Ciudad de Residencia</span>
+                <strong class="cert-val">{{ activeEst.ciudadResidencia }}</strong>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Academic Load Breakdown -->
+        <div class="cert-table-wrap">
+          <h4>
+            <i class="pi pi-list-check text-primary"></i>
+            <span>Carga Académica Aprobada: {{ materiasInscritasCount() }} Asignatura(s) ({{ creditosAcumulados() }} Créditos Totales)</span>
+          </h4>
+
+          @if (inscripciones().length === 0) {
+            <div class="cert-empty">
+              <i class="pi pi-exclamation-circle text-warning"></i>
+              <p>Aún no has inscrito materias para este estudiante.</p>
+              <button class="btn btn-primary" (click)="setStep(2)">
+                <i class="pi pi-plus"></i> Ir al Paso 2 para Inscribir
+              </button>
+            </div>
+          } @else {
+            <table class="cert-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Asignatura Matriculada</th>
+                  <th>Créditos</th>
+                  <th>Docente de Cátedra</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (inc of inscripciones(); track inc.id; let idx = $index) {
+                  <tr>
+                    <td class="col-num">{{ idx + 1 }}</td>
+                    <td class="col-title">
+                      <strong>{{ inc.materiaNombre }}</strong>
+                    </td>
+                    <td class="col-cr">
+                      <span class="badge badge-primary">3 Créditos</span>
+                    </td>
+                    <td class="col-teacher">
+                      <i class="pi pi-user text-muted"></i>
+                      <span>Prof. {{ inc.profesorNombre }}</span>
+                    </td>
+                    <td class="col-status">
+                      <span class="badge badge-success">
+                        <i class="pi pi-check"></i> Matriculada
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="2"><strong>Total Carga del Semestre</strong></td>
+                  <td><strong>{{ creditosAcumulados() }} / {{ MAX_CREDITOS }} Créditos</strong></td>
+                  <td colspan="2" class="text-right">
+                    @if (materiasInscritasCount() === MAX_MATERIAS) {
+                      <span class="badge badge-success">
+                        <i class="pi pi-check-circle"></i> 100% Carga Completa
+                      </span>
+                    } @else {
+                      <span class="badge badge-warning">
+                        <i class="pi pi-clock"></i> Matrícula Parcial ({{ materiasInscritasCount() }}/3)
+                      </span>
+                    }
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          }
+        </div>
+
+        <!-- Institutional Footer / Signatures -->
+        <div class="cert-institutional-footer">
+          <div class="rule-compliance-badge">
+            <i class="pi pi-shield text-cyan"></i>
+            <div>
+              <strong>Validación Institucional de Reglas Académicas</strong>
+              <span>
+                Verificado: Máximo 3 materias (9 créditos) asignadas sin duplicidad docente entre cátedras.
+              </span>
+            </div>
+          </div>
+          <div class="cert-folio">
+            <span>Folio Único de Registro:</span>
+            <code>CC-MAT-{{ activeEstudiante()?.id }}-2026-{{ materiasInscritasCount() }}</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Panel Post-Completion -->
+      <div class="completion-actions-bar glass-card">
+        <div class="action-buttons-group">
+          <button class="btn btn-outline" (click)="setStep(2)">
+            <i class="pi pi-pencil"></i>
+            <span>Modificar Asignaturas</span>
+          </button>
+          <button class="btn btn-outline" (click)="printComprobante()">
+            <i class="pi pi-print"></i>
+            <span>Imprimir Comprobante (PDF)</span>
+          </button>
+          <button class="btn btn-primary" (click)="goToCompaneros()">
+            <i class="pi pi-users"></i>
+            <span>Ver Compañeros de Clase</span>
+          </button>
+          <button class="btn btn-outline-success" (click)="resetWizard()">
+            <i class="pi pi-user-plus"></i>
+            <span>Matricular a Otro Estudiante</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  }
 </div>

@@ -163,6 +163,13 @@
                 <td class="text-right">
                   <div class="action-buttons">
                     <button
+                      class="btn-icon btn-enroll"
+                      title="Matricular / Inscribir Materias (Paso a Paso)"
+                      (click)="goToInscripciones(est.id)"
+                    >
+                      <i class="pi pi-book"></i>
+                    </button>
+                    <button
                       class="btn-icon"
                       title="Ver Detalle y Materias"
                       (click)="viewDetail(est)"
@@ -403,5 +410,68 @@
         </div>
       </div>
     }
+  </p-dialog>
+
+  <!-- Guided Post-Registration Dialog -->
+  <p-dialog
+    [(visible)]="isSuccessModalVisible"
+    [modal]="true"
+    [closable]="true"
+    [style]="{ width: '92vw', maxWidth: '580px' }"
+    [draggable]="false"
+    [resizable]="false"
+    header="¡Paso 1 Completado: Estudiante Registrado!"
+  >
+    <div class="onboarding-modal-content">
+      <div class="celebration-badge">
+        <i class="pi pi-check-circle"></i>
+      </div>
+      <h3>¡Registro Exitoso en el Sistema!</h3>
+      <p class="onboarding-desc">
+        El estudiante <strong>{{ newlyRegisteredStudent()?.name }}</strong> ha sido registrado satisfactoriamente con identificación <code>{{ newlyRegisteredStudent()?.document }}</code>.
+      </p>
+
+      <!-- Stepper Visual Progress -->
+      <div class="stepper-preview">
+        <div class="step-preview-item completed">
+          <div class="step-num"><i class="pi pi-check"></i></div>
+          <div class="step-meta">
+            <strong>Paso 1: Estudiante</strong>
+            <span>Datos guardados</span>
+          </div>
+        </div>
+        <div class="step-line active"></div>
+        <div class="step-preview-item current">
+          <div class="step-num">2</div>
+          <div class="step-meta">
+            <strong>Paso 2: Materias</strong>
+            <span>Elegir 3 materias (9 créditos)</span>
+          </div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step-preview-item pending">
+          <div class="step-num">3</div>
+          <div class="step-meta">
+            <strong>Paso 3: Matrícula</strong>
+            <span>Resumen y comprobante</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="onboarding-tip">
+        <i class="pi pi-lightbulb"></i>
+        <span>El asistente paso a paso te guiará para seleccionar las 3 materias (3 créditos cada una) validando en vivo que no repitas ningún docente.</span>
+      </div>
+
+      <div class="onboarding-actions">
+        <button type="button" class="btn btn-outline" (click)="closeSuccessModal()">
+          Permanecer en Directorio
+        </button>
+        <button type="button" class="btn btn-primary btn-glow" (click)="goToInscripciones()">
+          <span>Continuar a Selección de Materias (Paso 2)</span>
+          <i class="pi pi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
   </p-dialog>
 </div>

@@ -1,6 +1,7 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { Dialog } from 'primeng/dialog';
 import { Toast } from 'primeng/toast';
@@ -24,6 +25,7 @@ import { EstudianteMateriaRelacionDTO } from '../../core/models/inscripcion.mode
   styleUrl: './estudiantes.component.scss',
 })
 export class EstudiantesComponent implements OnInit {
+  private readonly router = inject(Router);
   private readonly estudiantesService = inject(EstudiantesService);
   private readonly inscripcionesService = inject(InscripcionesService);
   private readonly messageService = inject(MessageService);
@@ -40,6 +42,8 @@ export class EstudiantesComponent implements OnInit {
   // Dialog State
   readonly isDialogVisible = signal<boolean>(false);
   readonly isDetailVisible = signal<boolean>(false);
+  readonly isSuccessModalVisible = signal<boolean>(false);
+  readonly newlyRegisteredStudent = signal<{ id: number; name: string; document: string } | null>(null);
   readonly isEditing = signal<boolean>(false);
   readonly selectedEstudiante = signal<EstudianteDTO | null>(null);
   readonly estudianteMaterias = signal<EstudianteMateriaRelacionDTO[]>([]);
@@ -205,15 +209,36 @@ export class EstudiantesComponent implements OnInit {
       });
     } else {
       this.estudiantesService.add(model).subscribe({
-        next: () => {
+        next: (createdRes: any) => {
           this.saving.set(false);
           this.isDialogVisible.set(false);
           this.messageService.add({
             severity: 'success',
             summary: 'Registro Exitoso',
-            detail: `Estudiante ${model.nombres} registrado en línea.`
+            detail: `Estudiante ${model.nombres} ${model.apellidos} registrado en línea.`
           });
           this.loadEstudiantes();
+
+          const studentObj = createdRes?.data || createdRes;
+          const studentId = studentObj?.id;
+          const fullName = `${model.nombres} ${model.apellidos}`.trim();
+          const doc = `${model.tipoDocumento}: ${model.identificacion}`;
+
+          if (studentId) {
+            this.handleSuccessfulRegistration(studentId, fullName, doc);
+          } else {
+            // Find student by email to ensure accurate ID
+            this.estudiantesService.getByCorreo(model.correoElectronico).subscribe({
+              next: (foundRes: any) => {
+                const found = foundRes?.data || foundRes;
+                const foundId = found?.id;
+                this.handleSuccessfulRegistration(foundId || 0, fullName, doc);
+              },
+              error: () => {
+                this.handleSuccessfulRegistration(0, fullName, doc);
+              }
+            });
+          }
         },
         error: (err) => {
           this.saving.set(false);
@@ -225,6 +250,27 @@ export class EstudiantesComponent implements OnInit {
         }
       });
     }
+  }
+
+  handleSuccessfulRegistration(id: number, name: string, document: string): void {
+    this.newlyRegisteredStudent.set({ id, name, document });
+    this.isSuccessModalVisible.set(true);
+  }
+
+  goToInscripciones(estudianteId?: number): void {
+    const id = estudianteId ?? this.newlyRegisteredStudent()?.id;
+    this.isSuccessModalVisible.set(false);
+    this.router.navigate(['/inscripciones'], {
+      queryParams: {
+        estudianteId: id || undefined,
+        step: 2,
+        nuevo: 'true'
+      }
+    });
+  }
+
+  closeSuccessModal(): void {
+    this.isSuccessModalVisible.set(false);
   }
 
   toggleEstado(est: EstudianteDTO): void {
