@@ -27,9 +27,14 @@
 
     <!-- Program Badge & Quick Info -->
     <div class="header-actions">
+      <button class="info-modal-btn" (click)="openPruebaModal()" title="Ver informe de respuesta a los 9 requerimientos">
+        <i class="pi pi-verified"></i>
+        <span>Requisitos Prueba (9/9)</span>
+      </button>
+
       <div class="program-pill">
         <i class="pi pi-bolt"></i>
-        <span>Prog. 9 Créditos (3 Materias)</span>
+        <span>Prog. 9 Créditos</span>
       </div>
 
       <!-- Mobile Hamburger Button -->
@@ -46,6 +51,11 @@
   <!-- Mobile Dropdown Navigation -->
   @if (isMobileMenuOpen()) {
     <div class="mobile-nav">
+      <button class="mobile-nav-link text-primary-btn" (click)="openPruebaModal()">
+        <i class="pi pi-verified"></i>
+        <span>Informe de Requisitos de la Prueba (9/9)</span>
+      </button>
+
       @for (item of navItems; track item.route) {
         <a
           [routerLink]="item.route"

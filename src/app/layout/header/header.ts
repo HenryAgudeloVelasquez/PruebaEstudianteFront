@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { PruebaInfoService } from '../../core/services/prueba-info.service';
 
 @Component({
   selector: 'app-header',
@@ -10,6 +11,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   styleUrl: './header.scss',
 })
 export class HeaderComponent {
+  private readonly pruebaInfoService = inject(PruebaInfoService);
   readonly isMobileMenuOpen = signal<boolean>(false);
 
   readonly navItems = [
@@ -25,5 +27,10 @@ export class HeaderComponent {
 
   closeMobileMenu(): void {
     this.isMobileMenuOpen.set(false);
+  }
+
+  openPruebaModal(): void {
+    this.pruebaInfoService.open();
+    this.closeMobileMenu();
   }
 }

@@ -4,4 +4,94 @@
     <router-outlet></router-outlet>
   </main>
   <app-footer></app-footer>
+
+  <!-- Modal Informativo: Cumplimiento Funcional de los 9 Requisitos de la Prueba -->
+  <p-dialog
+    [(visible)]="pruebaInfo.isModalVisible"
+    [modal]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    [style]="{ width: '94vw', maxWidth: '980px', maxHeight: '92vh' }"
+    [draggable]="false"
+    [resizable]="false"
+    header="Informe de Cumplimiento Funcional: 9/9 Requisitos"
+  >
+    <div class="requirements-modal-content">
+      <!-- Modal Header Banner -->
+      <div class="modal-banner">
+        <div class="banner-badge-icon">
+          <i class="pi pi-verified"></i>
+        </div>
+        <div class="banner-texts">
+          <h2>Solución Técnica y Funcional a la Prueba</h2>
+          <p>
+            Desarrollado por <strong>Henry Agudelo</strong> para el Sistema de Registro Académico y Programa de Créditos.
+          </p>
+        </div>
+        <div class="compliance-score-pill">
+          <span class="score-num">9 / 9</span>
+          <span class="score-label">Requisitos Cumplidos (100%)</span>
+        </div>
+      </div>
+
+      <div class="modal-intro">
+        <i class="pi pi-info-circle text-primary"></i>
+        <span>
+          A continuación se detalla punto por punto cómo se resolvió cada uno de los 9 requerimientos estipulados en la prueba técnica:
+        </span>
+      </div>
+
+      <!-- 9 Requirements Grid -->
+      <div class="requirements-grid">
+        @for (req of requisitos; track req.numero) {
+          <div class="req-card glass-card">
+            <!-- Card Header -->
+            <div class="req-card-head">
+              <div class="req-num-badge">
+                <span>#{{ req.numero }}</span>
+              </div>
+              <h3 class="req-title">{{ req.titulo }}</h3>
+              <span class="badge" [ngClass]="req.badgeClass">{{ req.modulo }}</span>
+            </div>
+
+            <!-- Requirement Prompt Statement -->
+            <div class="req-statement">
+              <i class="pi pi-angle-right"></i>
+              <em>"{{ req.enunciado }}"</em>
+            </div>
+
+            <!-- Functional Solution Description -->
+            <div class="req-solution">
+              <strong class="solution-tag">
+                <i class="pi pi-check text-success"></i> Solución Funcional:
+              </strong>
+              <p>{{ req.solucionFuncional }}</p>
+            </div>
+
+            <!-- Direct Jump Link if applicable -->
+            @if (req.route) {
+              <div class="req-action">
+                <button class="btn-jump" (click)="goToModule(req.route)">
+                  <span>Ver en {{ req.modulo }}</span>
+                  <i class="pi pi-arrow-right"></i>
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer-actions">
+        <div class="footer-note">
+          <i class="pi pi-lightbulb text-amber"></i>
+          <span>Puedes volver a abrir este informe en cualquier momento desde el botón <strong>"Requisitos Prueba (9/9)"</strong> en la barra superior.</span>
+        </div>
+        <button type="button" class="btn btn-primary btn-glow" (click)="closeModal()">
+          <span>¡Entendido! Explorar el Sistema</span>
+          <i class="pi pi-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+  </p-dialog>
 </div>

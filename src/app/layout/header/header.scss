@@ -117,6 +117,42 @@
     align-items: center;
     gap: 1rem;
 
+    .info-modal-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.4rem 0.85rem;
+      background: linear-gradient(135deg, rgba(0, 180, 216, 0.2), rgba(2, 132, 199, 0.15));
+      border: 1px solid rgba(0, 180, 216, 0.45);
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--color-neon-cyan);
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.2);
+
+      i {
+        font-size: 0.95rem;
+        color: var(--color-neon-cyan);
+      }
+
+      &:hover {
+        background: linear-gradient(135deg, var(--color-neon-cyan), var(--color-primary));
+        color: #060b18;
+        border-color: var(--color-neon-cyan);
+        box-shadow: 0 0 16px rgba(0, 240, 255, 0.5);
+
+        i {
+          color: #060b18;
+        }
+      }
+
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+
     .program-pill {
       display: flex;
       align-items: center;
