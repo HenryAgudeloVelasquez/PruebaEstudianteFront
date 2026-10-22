@@ -1,19 +1,8 @@
-import {
-  ApplicationConfig,
-  EnvironmentProviders,
-  inject,
-  makeEnvironmentProviders,
-  provideAppInitializer,
-  provideZoneChangeDetection,
-} from '@angular/core';
-import {
-  provideRouter,
-  withComponentInputBinding,
-  withViewTransitions,
-} from '@angular/router';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter, withComponentInputBinding, withViewTransitions } from '@angular/router';
 import { provideHttpClient, withFetch } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { PRIME_NG_CONFIG, PrimeNG, PrimeNGConfigType } from 'primeng/config';
+import { providePrimeNG } from 'primeng/config';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -33,26 +22,10 @@ const AcademicPreset = definePreset(Aura, {
       700: '#0077b6',
       800: '#023e8a',
       900: '#03045e',
-      950: '#060b18'
-    }
-  }
+      950: '#060b18',
+    },
+  },
 });
-
-function provideCustomPrimeNG(...features: PrimeNGConfigType[]): EnvironmentProviders {
-  const providers = features?.map((feature) => ({
-    provide: PRIME_NG_CONFIG,
-    useValue: feature,
-    multi: false,
-  }));
-
-  const initializer = provideAppInitializer(() => {
-    const primeNGConfig = inject(PrimeNG);
-    features?.forEach((feature) => primeNGConfig.setConfig(feature));
-    primeNGConfig._setVerified(true);
-  });
-
-  return makeEnvironmentProviders([...(providers || []), initializer]);
-}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -60,17 +33,17 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding(), withViewTransitions()),
     provideHttpClient(withFetch()),
     provideAnimationsAsync(),
-    provideCustomPrimeNG({
+    providePrimeNG({
       theme: {
         preset: AcademicPreset,
         options: {
           darkModeSelector: '.app-dark',
-          cssLayer: false
-        }
+          cssLayer: false,
+        },
       },
-      ripple: true
+      ripple: true,
     }),
     MessageService,
-    ConfirmationService
-  ]
+    ConfirmationService,
+  ],
 };
