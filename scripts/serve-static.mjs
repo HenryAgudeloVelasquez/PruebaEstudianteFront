@@ -4,7 +4,7 @@ import { extname, resolve, sep } from 'node:path';
 
 const webRoot = resolve('dist/prueba-estudiante-front/browser');
 const indexPath = resolve(webRoot, 'index.html');
-const port = Number(process.env.PORT || 8080);
+const port = Number(process.env.PORT || 4200);
 const contentTypes = {
   '.css': 'text/css; charset=utf-8',
   '.html': 'text/html; charset=utf-8',
